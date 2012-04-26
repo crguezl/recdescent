@@ -26,15 +26,21 @@ module RD
 
      private
 
-     LexToken = Struct.new(:pattern, :block)
+     LexToken = Struct.new(:name, :pattern, :block)
 
-     def token(pattern, block = nil)
+     def token(pattern, &block)
+       if pattern.is_a? Hash
+         e = pattern.each 
+         pattern, name = e.next
+       else
+         name = nil # no name
+       end
        block = Proc.new { |m| m } if block.nil?
-       @lex_tokens << LexToken.new(Regexp.new('\\A(?:' + pattern.source + ')', pattern.options), block)
+       @lex_tokens << LexToken.new(name, Regexp.new('\\A(?:' + pattern.source + ')', pattern.options), block)
      end
 
      def white(pattern, block = nil)
-       @lex_tokens << LexToken.new(Regexp.new('\\A(?:' + pattern.source + ')', pattern.options), block)
+       @lex_tokens << LexToken.new(nil, Regexp.new('\\A(?:' + pattern.source + ')', pattern.options), block)
      end
 
   end
@@ -44,9 +50,9 @@ if __FILE__ == $0 then
 
   lexer = RD::Lexer.new do
      white  /\s+/
-     token (/\d+/) {|m| m.to_i }
-     token (/[a-zA-Z_]\w*/) 
-     token (/./) 
+     token ({/\d+/ => :NUM}) {|m| m.to_i }
+     token ({/[a-zA-Z_]\w*/ => :ID}) 
+     token /./ 
   end
 
   expr = ARGV.shift || "a = 2+3*(4+2)"
