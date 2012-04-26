@@ -28,9 +28,14 @@ module RD
 
      LexToken = Struct.new(:pattern, :block)
 
-      def token(pattern, &block)
-        @lex_tokens << LexToken.new(Regexp.new('\\A(?:' + pattern.source + ')', pattern.options), block)
-      end
+     def token(pattern, block = nil)
+       block = Proc.new { |m| m } if block.nil?
+       @lex_tokens << LexToken.new(Regexp.new('\\A(?:' + pattern.source + ')', pattern.options), block)
+     end
+
+     def white(pattern, block = nil)
+       @lex_tokens << LexToken.new(Regexp.new('\\A(?:' + pattern.source + ')', pattern.options), block)
+     end
 
   end
 end
@@ -38,12 +43,13 @@ end
 if __FILE__ == $0 then
 
   lexer = RD::Lexer.new do
-     token(/\s+/)
-     token(/\d+/) {|m| m.to_i }
-     token(/./)   {|m| m }
+     white  /\s+/
+     token (/\d+/) {|m| m.to_i }
+     token (/[a-zA-Z_]\w*/) 
+     token (/./) 
   end
 
-  expr = ARGV.shift || "2+3*(4+2)"
+  expr = ARGV.shift || "a = 2+3*(4+2)"
   puts expr
   lexer.lex(expr)
   puts lexer.tokens.join(",")
