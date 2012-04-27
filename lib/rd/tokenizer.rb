@@ -1,4 +1,16 @@
 module RD
+  class Token
+    attr_accessor :token, :value
+
+    def initialize(token, value=token)
+      @token, @value = token, value
+    end
+
+    def to_s
+      "(#@token, #@value)"
+    end
+  end
+
   class Lexer
      attr_accessor :patterns, :tokens
 
@@ -18,7 +30,7 @@ module RD
              name = match[0] unless name
              name = name.to_s
              if tok.block
-               @tokens << [ name, tok.block.call(match.to_s) ] 
+               @tokens << Token.new(name, tok.block.call(match.to_s)) 
              end
              string = match.post_match
              true
