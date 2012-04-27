@@ -58,7 +58,7 @@ module RD
                                    block)
      end
 
-     def white(pattern, block = nil)
+     def white(pattern, &block)
        @patterns << Pattern.new(nil, 
                                    Regexp.new('\\A(?:' + pattern.source + ')', pattern.options), 
                                    block)
@@ -71,9 +71,11 @@ if __FILE__ == $0 then
 
   lexer = RD::Lexer.new do
      white  /\s+/
-     token ({/\d+/              => :NUM}) {|m| m.to_i }
-     token ({/[a-zA-Z_]\w*/     => :ID}) 
-     token ({/<=|>=|==|!=|[<>]/ => :COMP}) 
+     token /\d+/              => :NUM do
+       |m| m.to_i 
+     end
+     token /[a-zA-Z_]\w*/     => :ID 
+     token /<=|>=|==|!=|[<>]/ => :COMP 
      token /./ 
   end
 
