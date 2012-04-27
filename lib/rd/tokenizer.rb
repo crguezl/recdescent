@@ -1,19 +1,25 @@
 module RD
   class Lexer
-     attr_accessor :lex_tokens, :tokens
+     attr_accessor :patterns, :tokens
 
      def initialize(&block)
-       @lex_tokens = []
+       @patterns = []
        @tokens = []
        instance_eval(&block)
      end
 
      def lex(string)
+       @tokens = []
        until string.empty?
-         there_is_a_match = @lex_tokens.any? do |tok|
+         there_is_a_match = @patterns.any? do |tok|
            match = tok.pattern.match(string)
            if match
-             @tokens << tok.block.call(match.to_s) if tok.block
+             name = tok.name
+             name = match[0] unless name
+             name = name.to_s
+             if tok.block
+               @tokens << [ name, tok.block.call(match.to_s) ] 
+             end
              string = match.post_match
              true
            else
@@ -26,21 +32,24 @@ module RD
 
      private
 
-     LexToken = Struct.new(:name, :pattern, :block)
+     Pattern = Struct.new(:name, :pattern, :block)
 
      def token(pattern, &block)
        if pattern.is_a? Hash
-         e = pattern.each 
-         pattern, name = e.next
+         pattern, name = pattern.each.next
        else
          name = nil # no name
        end
        block = Proc.new { |m| m } if block.nil?
-       @lex_tokens << LexToken.new(name, Regexp.new('\\A(?:' + pattern.source + ')', pattern.options), block)
+       @patterns << Pattern.new(name, 
+                                   Regexp.new('\\A(?:' + pattern.source + ')', pattern.options), 
+                                   block)
      end
 
      def white(pattern, block = nil)
-       @lex_tokens << LexToken.new(nil, Regexp.new('\\A(?:' + pattern.source + ')', pattern.options), block)
+       @patterns << Pattern.new(nil, 
+                                   Regexp.new('\\A(?:' + pattern.source + ')', pattern.options), 
+                                   block)
      end
 
   end
@@ -50,14 +59,19 @@ if __FILE__ == $0 then
 
   lexer = RD::Lexer.new do
      white  /\s+/
-     token ({/\d+/ => :NUM}) {|m| m.to_i }
-     token ({/[a-zA-Z_]\w*/ => :ID}) 
+     token ({/\d+/              => :NUM}) {|m| m.to_i }
+     token ({/[a-zA-Z_]\w*/     => :ID}) 
+     token ({/<=|>=|==|!=|[<>]/ => :COMP}) 
      token /./ 
   end
 
   expr = ARGV.shift || "a = 2+3*(4+2)"
   puts expr
   lexer.lex(expr)
-  puts lexer.tokens.join(",")
+  puts lexer.tokens.inspect
 
+  expr = "a = 2 <= 3"
+  puts expr
+  lexer.lex(expr)
+  puts lexer.tokens.inspect
 end
