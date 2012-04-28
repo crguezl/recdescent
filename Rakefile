@@ -1,7 +1,7 @@
 require 'rake/testtask'
 Rake::TestTask.new(:test) do |t|
   t.libs << 'lib' << 'test'
-  t.pattern = Dir.glob("test/tc_unit*.rb").join(" ")
+  t.pattern = FileList[("test/tc_unit*.rb")]
   t.verbose = true
 end
 
@@ -14,7 +14,7 @@ desc "Generate RCov test coverage and open in your browser"
 task :coverage do
   require 'rcov'
   sh "rm -fr coverage"
-  sh "rcov test/test_*.rb"
+  sh "rcov test/tc_unit*.rb"
   sh "open coverage/index.html"
 end
 
