@@ -22,9 +22,11 @@ module RD
 
      def lex(string)
        @tokens = []
-       until string.empty?
+       pos = 0
+       len = string.length - 1
+       until pos > len
          there_is_a_match = @patterns.any? do |tok|
-           match = tok.pattern.match(string)
+           match = tok.pattern.match(string, pos)
            if match
              name = tok.name
              name = match[0] unless name
@@ -32,13 +34,13 @@ module RD
              if tok.block
                @tokens << Token.new(name, tok.block.call(match.to_s)) 
              end
-             string = match.post_match
+             pos += match[0].length
              true
            else
              false
            end
          end
-         raise SyntaxError, "unable to lex '#{string}" unless  there_is_a_match
+         raise SyntaxError, "unable to parse '#{string[pos,10]}''" unless  there_is_a_match
        end
      end
 
@@ -53,15 +55,13 @@ module RD
          name = nil # no name
        end
        block = Proc.new { |m| m } if block.nil?
-       @patterns << Pattern.new(name, 
-                                   Regexp.new('\\A(?:' + pattern.source + ')', pattern.options), 
-                                   block)
+       @patterns << Pattern.new(name, Regexp.new('\\G(?:' + pattern.source + ')', pattern.options),
+                                block)
      end
 
      def white(pattern, &block)
-       @patterns << Pattern.new(nil, 
-                                   Regexp.new('\\A(?:' + pattern.source + ')', pattern.options), 
-                                   block)
+       @patterns << Pattern.new('white', Regexp.new('\\G(?:' + pattern.source + ')', pattern.options),
+                                block)
      end
 
   end
@@ -76,7 +76,7 @@ if __FILE__ == $0 then
      end
      token /[a-zA-Z_]\w*/     => :ID 
      token /<=|>=|==|!=|[<>]/ => :COMP 
-     token /./ 
+     token %r{[-+*/=()]} 
   end
 
   expr = ARGV.shift || "a = 2+3*(4+2)"
@@ -85,6 +85,11 @@ if __FILE__ == $0 then
   puts lexer.tokens.inspect
 
   expr = "a = 2 <= 3"
+  puts expr
+  lexer.lex(expr)
+  puts lexer.tokens.inspect
+
+  expr = "2 % 3"
   puts expr
   lexer.lex(expr)
   puts lexer.tokens.inspect
