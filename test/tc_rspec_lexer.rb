@@ -3,19 +3,25 @@ require "rd/tokenizer"
 describe RD::Lexer, "pipe lines" do
 
   before(:each) do
+    @lexer = RD::Lexer.new do
+       white  /\s+/
+       token /\d+/              => :NUM do
+         |m| m.to_i 
+       end
+       token /[a-zA-Z_]\w*/     => :ID 
+       token /<=|>=|==|!=|[<>]/ => :COMP 
+       token %r{[-+*/=()]} 
+    end
   end
                  
-  it "blabla" do
-      expected = [ 0, 10, 20, 30, 40, 50, 60, 70, 80, 90, ]
-
-      10.times do |i|
-         4.should == 4
-      end
-  end
-
-  it "'pairs | mult3| mult5' produce multiples of 30" do
-    expected = [ 0, 30, 60, 90, 120, 150, 180, 210, 240, 270, ]
-       5.should == 5
+  it "tokenizes 'a = 2+3*(4+2)'" do
+    expected = "[['ID', a], ['=', =], ['NUM', 2], ['+', +], ['NUM', 3], ['*', *], ['(', (], ['NUM', 4], ['+', +], ['NUM', 2], [')', )]])]]"
+    expr = "a = 2+3*(4+2)"
+    puts expr
+    puts @lexer.class
+    res = @lexer.lex(expr).to_s
+    puts "res = #{res}"
+    res.should == expected
   end
 
 end

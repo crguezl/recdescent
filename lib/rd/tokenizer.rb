@@ -7,7 +7,7 @@ module RD
     end
 
     def to_s
-      "(#@token, #@value)"
+      "['#@token', #@value]"
     end
   end
 
