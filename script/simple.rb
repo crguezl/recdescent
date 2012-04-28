@@ -1,6 +1,6 @@
-require "rdparser"
+require "rd/rdparser"
 
-parser = RDParser.new do
+parser = RD::RDParser.new do
    token(/\s+/)
    token(/./)   {|m| m }
 

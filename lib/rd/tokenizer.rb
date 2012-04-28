@@ -17,12 +17,13 @@ module RD
      def initialize(&block)
        @patterns = []
        @tokens = []
+       @pos = 0
        instance_eval(&block)
      end
 
      def lex(string)
        @tokens = []
-       pos = 0
+       @pos = pos = 0
        len = string.length - 1
        until pos > len
          there_is_a_match = @patterns.any? do |tok|
@@ -42,6 +43,11 @@ module RD
          end
          raise SyntaxError, "unable to parse '#{string[pos,10]}''" unless  there_is_a_match
        end
+     end
+
+     def next
+       @pos += 1
+       return @tokens[@pos - 1]
      end
 
      private
@@ -88,6 +94,13 @@ if __FILE__ == $0 then
   puts expr
   lexer.lex(expr)
   puts lexer.tokens.inspect
+
+  expr = "a = 2 <= 3"
+  puts expr
+  lexer.lex(expr)
+  while (ct = lexer.next)
+    puts ct
+  end
 
   expr = "2 % 3"
   puts expr
