@@ -93,4 +93,5 @@ if __FILE__ == $0 then
   puts expr
   lexer.lex(expr)
   puts lexer.tokens.inspect
+  # Produces exception/error
 end
