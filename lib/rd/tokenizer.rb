@@ -38,7 +38,7 @@ module RD
              false
            end
          end
-         raise "unable to lex '#{string}" unless  there_is_a_match
+         raise SyntaxError, "unable to lex '#{string}" unless  there_is_a_match
        end
      end
 
