@@ -24,4 +24,23 @@ describe RD::Lexer, "pipe lines" do
     res.should == expected
   end
 
+  it "tokenizes 'a = 2 <= 3'" do
+    expected = "[['ID', a], ['=', =], ['NUM', 2], ['COMP', <=], ['NUM', 3]]"
+
+
+    expr = "a = 2 <= 3"
+    @lexer.lex(expr)
+    res = @lexer.tokens.to_s
+
+    res.should == expected
+  end
+
+  it "tokenizes 'a = 2 <= 3'" do
+    expected = "[['ID', a], ['=', =], ['NUM', 2], ['COMP', <=], ['NUM', 3]]"
+
+
+    expr = "2 % 3"
+    lambda { @lexer.lex(expr) }.should raise_error
+  end
+
 end

@@ -5,7 +5,7 @@ Rake::TestTask.new(:test) do |t|
   t.verbose = true
 end
 
-task :test do
+task :rstest do
   puts "RSPEC"
   sh "rspec -Ilib test/tc_rspec_lexer.rb"
 end
