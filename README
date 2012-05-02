@@ -1,0 +1,35 @@
+Dropbox/src/recdescent
+Escriba una clase RD::Lexer que permita escribir un analizador léxico usando un DSL como este:
+
+   lexer = RD::Lexer.new do
+     white  /\s+/
+     token /\d+/              => :NUM do
+       |m| m.to_i 
+     end
+     token /[a-zA-Z_]\w*/     => :ID 
+     token /<=|>=|==|!=|[<>]/ => :COMP 
+     token /./ 
+  end
+
+El objeto "lexer" retornado por el constructor deberá disponer de un método "lex" que analice la entrada de acuerdo con la especificación del lexer:
+
+  expr = "a = 2+3*(4+2)" 
+  lexer.lex(expr)
+
+La llamada a "lex" retorna la lista de tokens
+encontrados:
+ 
+
+[(ID, a), (=, =), (NUM, 2), (+, +), (NUM, 3), (*, *), ((, (), (NUM, 4), (+, +), (NUM, 2), (), ))]
+
+ 
+
+El lenguaje de definición de tokens es:
+
+
+tokendef ->  'token' REGEXP specifications
+           | 'white REGEXP
+specifications ->  #vacio
+                  | '=>' SYMBOL optblock
+optblock -> #vacio
+           | DOBLOCK
